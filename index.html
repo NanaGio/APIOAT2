@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de APIs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #191418;
+            font-family: 'Poppins', sans-serif;
+        }
+        .hidden {
+            display: none;
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <!-- Container principal com layout lado a lado -->
+    <div class="container mx-auto p-8">
+        
+        <!-- Cabeçalho -->
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold mb-4 text-white">🎮 Dashboard de APIs</h1>
+            <p class="text-xl text-gray-300 mb-8">Descubra personagens aleatórios e álbuns incríveis!</p>
+            
+            <!-- Botão principal centralizado -->
+            <div class="text-center mb-12">
+                <button id="randomize-all-btn" class="bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold px-8 py-4 rounded-2xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300 text-lg shadow-2xl transform hover:scale-105">
+                    🎲 Randomizar Tudo 🎲
+                </button>
+            </div>
+        </header>
+
+        <!-- Seção dos Cards Lado a Lado -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            
+            <!-- Card Rick and Morty -->
+            <section class="bg-gray-900 rounded-2xl p-6 shadow-2xl">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">🧩 Rick and Morty</h2>
+                    <p class="text-gray-400">Personagens aleatórios do multiverso</p>
+                </div>
+                
+                <div id="character-container" class="flex justify-center items-center min-h-[420px]">
+                    <div id="character-card" class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 max-w-sm w-full card-hover hidden">
+                        <img id="character-image" class="w-full h-72 object-cover" src="" alt="Imagem do Personagem">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold mb-3 text-gray-800" id="character-name"></h2>
+                            <div class="space-y-2">
+                                <p class="text-gray-600"><strong class="text-gray-800">ID:</strong> <span id="character-id" class="font-mono"></span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Status:</strong> <span id="character-status" class="font-semibold"></span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Espécie:</strong> <span id="character-species"></span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Origem:</strong> <span id="character-origin"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rick-morty-message" class="text-center">
+                        <div class="text-white text-xl mb-4">🎯</div>
+                        <p class="text-white text-lg">Clique no botão para encontrar um personagem e um álbum!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card Spotify -->
+            <section class="bg-gray-900 rounded-2xl p-6 shadow-2xl">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-white mb-2">🎵 Spotify</h2>
+                    <p class="text-gray-400">Artistas e álbuns aleatórios</p>
+                </div>
+
+                <div id="spotify-container" class="flex justify-center items-center min-h-[420px]">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 max-w-sm w-full card-hover">
+                        <img class="w-full h-72 object-cover" src="https://placehold.co/400x400/1DB954/ffffff?text=🎵%20Álbum" alt="Imagem do Álbum" id="album-image">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold mb-1 text-gray-800" id="artist-name">Nome do Artista</h2>
+                            <p class="text-gray-700 mb-4 text-lg font-medium" id="album-name">Nome do Álbum</p>
+                            <div class="text-sm space-y-2">
+                                <p class="text-gray-600"><strong class="text-gray-800">ID do Artista:</strong> <span id="artist-id" class="font-mono">...</span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Gêneros:</strong> <span id="artist-genre">...</span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Lançamento:</strong> <span id="album-release">...</span></p>
+                                <p class="text-gray-600"><strong class="text-gray-800">Músicas:</strong> <span id="album-tracks">...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Rodapé -->
+        <footer class="text-center mt-12 pt-8 border-t border-gray-700">
+            <p class="text-gray-400">Desenvolvido com 💜 usando Rick and Morty API & Spotify API</p>
+        </footer>
+    </div>
+
+    <!-- Mensagem de Erro -->
+    <div id="error-message" class="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg hidden z-50">
+        <div class="flex items-center">
+            <span class="mr-2">⚠️</span>
+            <span id="error-text"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

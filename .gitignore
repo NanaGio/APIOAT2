@@ -1,0 +1,40 @@
+# Arquivos de Log e Erro
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+package-lock.json.orig
+
+# Dependências (O MAIS IMPORTANTE)
+# Já discutimos por que isso é crucial!
+node_modules/
+
+# Arquivos de Ambiente (SENHAS E CHAVES DE API)
+# Nunca envie suas senhas para o repositório.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.envrc
+
+# Pastas de Build (se você usar TypeScript, Babel, etc.)
+# Você só "commita" o código-fonte, não o código compilado.
+dist/
+build/
+.next/
+.out/
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE (Editores de Código)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Arquivos de Teste (Relatórios de Cobertura)
+coverage/
+.nyc_output/
