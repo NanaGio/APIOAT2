@@ -2,6 +2,7 @@
 
 [Node.js, Express, APIs REST]
 ## 🚀 Visão Geral do Projeto
+Link para testar: https://randomizador-he2d.onrender.com/
 
 Este projeto, intitulado **Dashboard de APIs com Rick and Morty e Spotify**, é um trabalho de revisão e aplicação prática dos conceitos fundamentais de APIs.
 
