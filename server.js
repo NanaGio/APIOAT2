@@ -1,11 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const app = express();
-const path = require('path');
+require('dotenv').config(); // Carrega variáveis de ambiente do arquivo .env
+const express = require('express'); // Framework para criar o servidor web
+const axios = require('axios'); //r requisições HTTP
+const app = express(); // Inicializa a aplicação Express
+const path = require('path'); 
 const port = process.env.port || 3000;
-const CLIENT_ID = 'd6995ae1549b43f689e3d7621329f9af'
-const CLIENT_SECRET = '7aba0aafa821419b811c4be45a5cafcb'
+
 
 let spotifyToken = {
     value: null,
