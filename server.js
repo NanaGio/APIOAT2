@@ -2,10 +2,10 @@ require('dotenv').config(); // Carrega variáveis de ambiente do arquivo .env
 const express = require('express'); // Framework para criar o servidor web
 const axios = require('axios'); //r requisições HTTP
 const app = express(); // Inicializa a aplicação Express
-const path = require('path'); 
-const port = process.env.port || 3000;
+const path = require('path'); // Módulo para lidar com caminhos de arquivos
+const port = process.env.port || 3000; // Define a porta do servidor
 
-
+// Cache do token do Spotify | nana
 let spotifyToken = {
     value: null,
     expiresAt: null
@@ -34,14 +34,14 @@ app.get('/personagem-aleatorio', async (req, res) => {
         const characterResponse = await axios.get(`${RICK_AND_MORTY_API_URL}/${randomId}`);
 
         res.json(characterResponse.data);
-    } catch (error) {
+    } catch (error) { //caso de erro na busca do personagem | nana
         console.error("Falha ao buscar personagem:", error.message);
         res.status(500).json({error: "Não foi possivel buscar um personagem."});
 
     }
 });
 
-// chamando spotify | nana
+// chamando token do spotify | nana
 async function getSpotifyToken() {
     if (spotifyToken.value && spotifyToken.expiresAt > Date.now()) {
         console.log("Usando token do Spotify (do cache).");
@@ -71,12 +71,12 @@ async function getSpotifyToken() {
         spotifyToken.expiresAt = Date.now() + expiresInMs - 60000;
         return token;
 
-    } catch (error) {
+    } catch (error) {// caso de erro na busca do token | nana
         console.error("Erro ao obter token do Spotify:", error.response ? error.response.data : error.message);
         throw new Error("Falha na autenticação com Spotify.");
     }
 }
-
+// buscando albuns e artistas | nana
 app.get('/buscar-artista', async (req, res) => {
     try {
         const token = await getSpotifyToken();
@@ -106,7 +106,7 @@ app.get('/buscar-artista', async (req, res) => {
         });
 
         const allAlbums = albumsResponse.data.items;
-         if (allAlbums.length === 0) {
+         if (allAlbums.length === 0) {// caso não se encontre albuns para determinado artista | nana
          return res.status(404).json({ error: "Álbuns não encontrados para este artista." });
          }
 
@@ -123,7 +123,7 @@ app.get('/buscar-artista', async (req, res) => {
 
         res.json(responseData);
 
-    } catch (error) {
+    } catch (error) {// caso de erro ao buscar o artista | nana
         console.error("Erro na rota /buscar-artista:", error.message);
         if (error.response) {
             console.error("Erro Spotify:", error.response.data);
@@ -131,7 +131,7 @@ app.get('/buscar-artista', async (req, res) => {
         res.status(500).json({ error: "Erro ao buscar dados do Spotify." });
     }
 });
-
+//anunciando no console que o server foi iniciado | nana
 app.listen(port, () => {
     console.log(`SERVIDOR INICIADO, RODANDO EM ${port}`)
 })
