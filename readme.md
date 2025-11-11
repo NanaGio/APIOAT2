@@ -67,4 +67,8 @@ Após configurar as credenciais, ligue o servidor:
 
 ```bash
 node server.js
+```
+
+### 4. Exemplos de Uso
+    Acesse o site, favorite Personagem e álbum, clicando no botão. Acesse /ver-favorito para ver seus favoritos.
 
