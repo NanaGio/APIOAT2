@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mainButton.disabled = true;
         mainButton.textContent = 'Randomizando... ⏳';
 
+        loadingStates.setLoading(characterCard, true);
+        loadingStates.setLoading(albumImage.parentElement, true);
+
         rickMortyMessage.classList.add('hidden');
         characterCard.classList.add('hidden');
         
@@ -41,9 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             mainButton.disabled = false;
             mainButton.textContent = '✨ Randomizar Tudo ✨';
+
+            loadingStates.setLoading(characterCard, false);
+            loadingStates.setLoading(albumImage.parentElement, false);
         }
     }
-
+    // fetch R&M
     async function fetchRandomCharacter() {
         try {
 
@@ -77,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // fetch Spotify
     async function fetchRandomArtist() {
 
         const randomArtistsList = [
@@ -110,4 +117,130 @@ document.addEventListener('DOMContentLoaded', () => {
             albumName.textContent = 'Tente novamente';
         }
     }
+    // animação de carregando
+    const loadingStates = {
+        setLoading: (element, isLoading) => {
+            if (isLoading) {
+                element.classList.add('animated-pulse', 'opacity-50');
+            } else {
+                element.classList.remove('animated-pulse', 'opacity-50');
+            }
+        }
+    };
+
+    const API = {
+        async adicionarFavorito(tipo, data) {
+            try {
+                const response = await fetch('/favoritos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tipo,
+                        id: data.id,
+                        nome: tipo === 'character' ? data.name : data.artistName,
+                        imagem: tipo === 'character' ? data.image : data.albumImage
+                    })
+                });
+            } catch (error) {
+                console.error('Erro:', error);
+                throw error;
+            }
+        },
+
+        async atualizarFavorito(id, dados){
+            try {
+                const response = await fetch(`/favoritos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (!response.ok) throw new Error('Erro ao atualizar favorito');
+                return response.json();
+            } catch (error) {
+                console.error('Erro:', error);
+                throw error;
+            }
+        },
+
+        async removerFavorito(id) {
+            try {
+                const response = await fetch(`/favoritos/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Erro ao remover favorito');
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                throw error;
+            }
+        },
+
+        async listarFavoritos(){
+            try {
+                const response = await fetch('/favoritos');
+                if (!response.ok) throw new Error('Erro ao listar favoritos');
+                return response.json();
+            } catch (error) {
+                console.error('Erro:', error);
+                throw error;
+
+            }
+        }
+    };
+
+    // Exemplo de uso:
+
+    function adicionarBotoesFavoritos() {
+    // Botão para favoritar personagem
+    const btnFavoritarChar = document.createElement('button');
+    btnFavoritarChar.className = 'bg-purple-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-purple-600 transition-colors';
+    btnFavoritarChar.textContent = '❤️ Favoritar Personagem';
+    btnFavoritarChar.onclick = async () => {
+        try {
+            await API.adicionarFavorito('character', {
+                id: characterId.textContent,
+                name: characterName.textContent,
+                image: characterImage.src
+            });
+            console.log('Personagem favoritado!');
+        } catch (error) {
+            console.error('Erro ao favoritar:', error);
+        }
+    };
+
+    // Botão para favoritar álbum
+    const btnFavoritarAlbum = document.createElement('button');
+    btnFavoritarAlbum.className = 'bg-green-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-green-600 transition-colors';
+    btnFavoritarAlbum.textContent = '❤️ Favoritar Álbum';
+    btnFavoritarAlbum.onclick = async () => {
+        try {
+            await API.adicionarFavorito('album', {
+                id: artistId.textContent,
+                artistName: artistName.textContent,
+                albumName: albumName.textContent,
+                image: albumImage.src
+            });
+            console.log('Álbum favoritado!');
+        } catch (error) {
+            console.error('Erro ao favoritar:', error);
+        }
+    };
+
+        // Adiciona os botões aos cards
+        characterCard.querySelector('.p-6').appendChild(btnFavoritarChar);
+        
+        const spotifyCard = document.querySelector('#spotify-container .bg-white');
+        if (spotifyCard) {
+            spotifyCard.querySelector('.p-6').appendChild(btnFavoritarAlbum);
+        }
+    }
+   
+    adicionarBotoesFavoritos();
+
 });
