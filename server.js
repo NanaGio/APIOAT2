@@ -1,11 +1,16 @@
-require('dotenv').config(); // Carrega variáveis de ambiente do arquivo .env
-const express = require('express'); // Framework para criar o servidor web
-const axios = require('axios'); //r requisições HTTP
-const app = express(); // Inicializa a aplicação Express
-const path = require('path'); // Módulo para lidar com caminhos de arquivos
-const port = process.env.port || 3000; // Define a porta do servidor
+require('dotenv').config();
+const express = require('express'); //usando express
+const axios = require('axios'); //axios para conectar API's externas (R&M e SPOTIFY)
+const app = express(); //usando express
+const path = require('path'); //declarando path
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;// declarando a chave do spotify
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;// declarando a chave do spotify
+const port = process.env.port || 3000;// declarando porta
 
-// Cache do token do Spotify | nana
+// Array para reunir favoritados do usuario
+let favoritos = [];
+
+// utilizando token do spotify
 let spotifyToken = {
     value: null,
     expiresAt: null
@@ -22,6 +27,7 @@ function logger (req, res, next){
 app.use(logger)
 
 app.use(express.static(path.join(__dirname, '')));
+app.use(express.json()); //middleware pro json
 
 //chamando rick & morty | nana
 app.get('/personagem-aleatorio', async (req, res) => {
@@ -34,14 +40,15 @@ app.get('/personagem-aleatorio', async (req, res) => {
         const characterResponse = await axios.get(`${RICK_AND_MORTY_API_URL}/${randomId}`);
 
         res.json(characterResponse.data);
-    } catch (error) { //caso de erro na busca do personagem | nana
+    } catch (error) {
         console.error("Falha ao buscar personagem:", error.message);
         res.status(500).json({error: "Não foi possivel buscar um personagem."});
 
     }
 });
 
-// chamando token do spotify | nana
+
+// chamando spotify | nana
 async function getSpotifyToken() {
     if (spotifyToken.value && spotifyToken.expiresAt > Date.now()) {
         console.log("Usando token do Spotify (do cache).");
@@ -71,12 +78,18 @@ async function getSpotifyToken() {
         spotifyToken.expiresAt = Date.now() + expiresInMs - 60000;
         return token;
 
-    } catch (error) {// caso de erro na busca do token | nana
+    } catch (error) {
         console.error("Erro ao obter token do Spotify:", error.response ? error.response.data : error.message);
         throw new Error("Falha na autenticação com Spotify.");
     }
 }
-// buscando albuns e artistas | nana
+
+// definindo favoritos
+app.get('/favoritos', (req, res) => {
+    res.json(favoritos);
+});
+
+// GET - buscando artistas da API do Spotify
 app.get('/buscar-artista', async (req, res) => {
     try {
         const token = await getSpotifyToken();
@@ -106,7 +119,7 @@ app.get('/buscar-artista', async (req, res) => {
         });
 
         const allAlbums = albumsResponse.data.items;
-         if (allAlbums.length === 0) {// caso não se encontre albuns para determinado artista | nana
+         if (allAlbums.length === 0) {
          return res.status(404).json({ error: "Álbuns não encontrados para este artista." });
          }
 
@@ -123,7 +136,7 @@ app.get('/buscar-artista', async (req, res) => {
 
         res.json(responseData);
 
-    } catch (error) {// caso de erro ao buscar o artista | nana
+    } catch (error) {
         console.error("Erro na rota /buscar-artista:", error.message);
         if (error.response) {
             console.error("Erro Spotify:", error.response.data);
@@ -131,7 +144,96 @@ app.get('/buscar-artista', async (req, res) => {
         res.status(500).json({ error: "Erro ao buscar dados do Spotify." });
     }
 });
-//anunciando no console que o server foi iniciado | nana
+
+// POST - adiciona o favorito
+app.post('/favoritos', async (req, res) => {
+    try {
+        const {tipo, id, nome, imagem} = req.body; // Corrigi "images" para "imagem"
+
+        console.log('📥 Dados recebidos:', req.body);
+        console.log('📊 Favoritos antes:', favoritos);
+
+        if (!tipo || !id || !nome){
+            return res.status(400).json({error: "Dados incompletos"});
+        }
+
+        const novoFavorito = {
+            id,
+            tipo,
+            nome,
+            imagem,
+            dataCriacao: new Date()
+        };
+
+        favoritos.push(novoFavorito);
+        
+        console.log('✅ Favoritos depois:', favoritos);
+        console.log('🎯 Total de favoritos:', favoritos.length);
+
+        res.status(201).json(novoFavorito);
+    } catch (error) {
+        console.error('❌ Erro ao adicionar favorito:', error);
+        res.status(500).json({ error: "Erro ao adicionar favorito"});
+    }
+});
+
+// GET - use /ver-favoritos para ver seus favoritados
+app.get('/ver-favoritos', (req, res) => {
+    res.json({
+        quantidade: favoritos.length,
+        favoritos: favoritos
+    });
+});
+
+// Adicione também uma rota para ver os favoritos no console
+app.get('/debug-favoritos', (req, res) => {
+    console.log('🔍 Array de favoritos:', favoritos);
+    console.log('📈 Quantidade:', favoritos.length);
+    res.json(favoritos);
+});
+
+//PUT - Estrutura dos favoritdas no /ver-favoritos
+app.put('/favoritos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, tipo } = req.body;
+
+        const index = favoritos.findIndex(f => f.id === id);
+        if (index === -1){
+            return res.status(404).json({ error: "Favorito não encontrado "})
+        }
+
+        favoritos[index] = {
+            ...favoritos[index],
+            nome: nome || favoritos[index].nome,
+            tipo: tipo || favoritos[index].tipo,
+            dataAtualizacao: new Date()
+        };
+
+        res.json(favoritos[index]);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao atualizar favorito" });
+    }
+});
+
+//DELETE - Deletar um favorito
+app.delete('/favoritos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const index = favoritos.findIndex(f => f.id === id);
+
+        if (index === -1){
+            return res.status(404).json({ error: "Favorito não encontrado"});
+        }
+
+        favoritos.splice(index, 1);
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao deletar favorito "});
+    }
+})
+
+//Declaração da porta 3000, rodando
 app.listen(port, () => {
     console.log(`SERVIDOR INICIADO, RODANDO EM ${port}`)
 })
